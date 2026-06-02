@@ -151,7 +151,7 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
                   if (!currentNode) return null;
                   const nextSelectedKey = history[index + 1];
                   return (
-                    <div key={nodeKey + index} className="flow-level">
+                    <div key={nodeKey + index} className={`flow-level ${nextSelectedKey ? 'previous-level' : ''}`}>
                       <div className="question-box"><h2>{currentNode.question}</h2></div>
                       {/* 이미 선택이 완료된 이전 단계의 답변만 표시 */}
                       {nextSelectedKey && (

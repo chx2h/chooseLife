@@ -188,6 +188,11 @@ h1 {
   animation: slideIn 0.3s ease-out;
 }
 
+.flow-level.previous-level {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
+
 .fixed-bottom-options {
   /* margin-top: auto; */ /* absolute 포지셔닝 시 필요 없음 */
   padding: 20px 10px calc(80px + env(safe-area-inset-bottom)); /* 커진 버튼에 맞춰 영역 여백을 조정했습니다 */
