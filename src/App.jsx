@@ -51,6 +51,9 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
    */
   const [history, setHistory] = useState(['start']);
 
+  // 커스텀 모달의 상태를 관리합니다. (열림 여부 및 메시지)
+  const [modal, setModal] = useState({ isOpen: false, message: '' });
+
   // useEffect를 활용하여 flowData 상태가 변경될 때마다 LocalStorage를 동기화합니다.
   useEffect(() => {
     localStorage.setItem('myQuestData', JSON.stringify(flowData));
@@ -77,14 +80,14 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
 
     // 1. 알림 문구가 존재할 경우 브라우저 내장 alert를 호출합니다.
     if (hasOptionAlert) {
-      alert(option.alert);
+      setModal({ isOpen: true, message: option.alert });
     }
 
     // 2. 이동하고자 하는 타겟 노드가 데이터(flowData)에 존재하는지 유효성 검사를 수행합니다.
     if (!flowData[option.key]) { 
       // 타겟 노드가 없고 버튼 알림도 없었다면 설정된 에러 메시지를 출력하고 종료합니다.
       if (!hasOptionAlert) {
-        alert(errorMsg);
+        setModal({ isOpen: true, message: errorMsg });
       }
       return;
     }
@@ -116,6 +119,11 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
       // 페이지를 새로고침하여 모든 컴포넌트 상태를 강제로 초기화할 수도 있지만,
       // 여기서는 상태를 직접 재설정하는 방식으로 처리합니다.
     }
+  };
+
+  // 모달을 닫는 함수입니다.
+  const closeModal = () => {
+    setModal({ ...modal, isOpen: false });
   };
 
   return ( // JSX 렌더링 영역입니다.
@@ -193,6 +201,16 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
           />
         )}
       </section>
+
+      {/* 커스텀 모달 레이어 팝업 */}
+      {modal.isOpen && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <p>{modal.message}</p>
+            <button className="modal-btn" onClick={closeModal}>확인</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
