@@ -100,16 +100,18 @@ h1 {
 }
 
 .counter {
-  font-size: 1em;
-  padding: 10px 15px; /* Increased padding for better touch targets */
-  border-radius: 8px;
+  font-size: 1.15rem; /* 글자 크기를 키워 가독성을 대폭 높였습니다 */
+  padding: 16px 24px; /* 버튼의 상하좌우 크기를 키워 터치 영역을 확장했습니다 */
+  border-radius: 12px; /* 조금 더 부드러운 곡률을 적용했습니다 */
   color: var(--accent);
   background: var(--accent-bg);
-  border: 2px solid transparent;
+  border: 2px solid var(--accent-border); /* 경계선을 명확하게 부여하여 가시성을 확보했습니다 */
+  font-weight: 700; /* 글자를 더 두껍게 하여 눈에 잘 띄게 했습니다 */
   transition: border-color 0.3s, background-color 0.3s, color 0.3s;
   flex: 1 1 140px; /* 버튼이 최소 140px를 유지하며 유연하게 늘어나요 */
   max-width: 250px; /* 버튼이 너무 옆으로 길어지지 않게 꽉 잡아줘요 */
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 약간의 그림자를 추가하여 버튼임을 강조했습니다 */
 
   &:hover {
     border-color: var(--accent-border);
@@ -177,7 +179,7 @@ h1 {
 
 .fixed-bottom-options {
   margin-top: auto;
-  padding: 15px 0 calc(60px + env(safe-area-inset-bottom)); /* 여백을 60px로 대폭 늘려 상태창 간섭 방지 */
+  padding: 20px 10px calc(80px + env(safe-area-inset-bottom)); /* 커진 버튼에 맞춰 영역 여백을 조정했습니다 */
   border-top: 1px solid var(--border);
   background: var(--bg); /* 스크롤되는 내용이 겹치지 않게 배경색 지정 */
   position: sticky;
