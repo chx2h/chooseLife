@@ -440,6 +440,13 @@ h1 {
   font-style: italic;
 }
 
+.tree-alert-label {
+  color: var(--accent);
+  font-size: 0.85em;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
 .btn-close-tree {
   width: 100%;
   margin-top: 20px;

@@ -342,19 +342,23 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
   };
 
   // 트리 구조를 재귀적으로 렌더링하는 함수입니다.
-  const renderTree = (nodeKey, choiceText = "", visited = new Set()) => {
+  const renderTree = (nodeKey, choiceText = "", alertText = "", visited = new Set()) => {
     const node = data[nodeKey];
     const choiceInfo = choiceText ? <span className="tree-choice-label">↳ "{choiceText}" 선택 시 ➔ </span> : null;
+    const alertInfo = alertText ? <span className="tree-alert-label"> (알림: "{alertText}")</span> : null;
 
     if (!node) return (
       <li className="tree-item">
-        {choiceInfo}<span className="tree-node-id">{nodeKey}</span> (연결된 노드 없음)
+        {choiceInfo}
+        <span className="tree-node-id">{nodeKey}</span>
+        {alertInfo}
+        (연결된 노드 없음)
       </li>
     );
 
     // 무한 루프(순환 참조) 방지
     if (visited.has(nodeKey)) {
-      return <li className="tree-item">{choiceInfo}<span className="tree-node-id">{nodeKey}</span> (이미 위에서 언급됨)</li>;
+      return <li className="tree-item">{choiceInfo}<span className="tree-node-id">{nodeKey}</span>{alertInfo} (이미 위에서 언급됨)</li>;
     }
     visited.add(nodeKey);
 
@@ -362,12 +366,13 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
       <li key={nodeKey} className="tree-item">
         <div>
           {choiceInfo}
+          {alertInfo}
           <span className="tree-node-id">{nodeKey}</span>
           <span className="tree-node-q">{node.question}</span>
         </div>
         {node.options.length > 0 && (
           <ul className="tree-list">
-            {node.options.map((opt, i) => renderTree(opt.key, opt.text, new Set(visited)))}
+            {node.options.map((opt, i) => renderTree(opt.key, opt.text, opt.alert, new Set(visited)))}
           </ul>
         )}
       </li>
@@ -461,7 +466,7 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
           <div className="tree-view-content" onClick={(e) => e.stopPropagation()}>
             <h2>프로세스 전체 구조</h2>
             <ul className="tree-list" style={{border: 'none'}}>
-              {renderTree('start')}
+              {renderTree('start', "", "", new Set())}
             </ul>
             <button className="btn-close-tree" onClick={() => setShowTreeView(false)}>닫기</button>
           </div>
