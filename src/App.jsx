@@ -135,34 +135,52 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
                 <button className="btn-refresh" onClick={reset}>↻</button> {/* 초기화 액션 트리거 */}
               </h1>
             </div>
-            <div className="flow-stack"> {/* 선택 히스토리에 따라 스택 형태로 노드들을 렌더링합니다. */}
-              {history.map((nodeKey, index) => {
-                const currentNode = flowData[nodeKey];
-                if (!currentNode) return null;
-                const nextSelectedKey = history[index + 1]; // 다음 단계에서 선택된 키가 있는지 확인합니다.
-                return (
-                  <div key={nodeKey + index} className="flow-level"> {/* 배열 렌더링 시에는 고유한 key 값이 필수입니다. */}
-                    <div className="question-box"><h2>{currentNode.question}</h2></div>
+            <div className="simulator-content">
+              <div className="flow-stack">
+                {/* 1. 질문 히스토리 기록 (이미 선택된 질문과 답변들) */}
+                {history.map((nodeKey, index) => {
+                  const currentNode = flowData[nodeKey];
+                  if (!currentNode) return null;
+                  const nextSelectedKey = history[index + 1];
+                  return (
+                    <div key={nodeKey + index} className="flow-level">
+                      <div className="question-box"><h2>{currentNode.question}</h2></div>
+                      {/* 이미 선택이 완료된 이전 단계의 답변만 표시 */}
+                      {nextSelectedKey && (
+                        <div className="options">
+                          {currentNode.options.filter(opt => opt.key === nextSelectedKey).map(opt => (
+                            <button key={opt.key} className="counter selected" disabled>{opt.text}</button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 2. 현재 활성화된 질문의 선택지 (화면 하단에 고정) */}
+              <div className="fixed-bottom-options">
+                {(() => {
+                  const currentKey = history[history.length - 1];
+                  const currentNode = flowData[currentKey];
+                  if (!currentNode) return null;
+                  return (
                     <div className="options">
                       {currentNode.options.length > 0 ? (
-                        currentNode.options.map((option) => {
-                          // 이미 다음 단계가 선택된 경우, 선택되지 않은 버튼은 필터링하여 UI 가독성을 높입니다.
-                          if (nextSelectedKey && nextSelectedKey !== option.key) return null;
-                          return (
-                            <button
-                              key={option.key}
-                              className={`counter ${nextSelectedKey === option.key ? 'selected' : ''}`}
-                              onClick={() => handleChoice(option, index)}
-                            >
-                              {option.text}
-                            </button>
-                          );
-                        })
+                        currentNode.options.map((option) => (
+                          <button
+                            key={option.key}
+                            className="counter"
+                            onClick={() => handleChoice(option, history.length - 1)}
+                          >
+                            {option.text}
+                          </button>
+                        ))
                       ) : <button className="counter reset" onClick={reset}>다시 시작하기</button>}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })()}
+              </div>
             </div>
           </>
         ) : ( // 에디터 모드 렌더링
