@@ -177,7 +177,7 @@ h1 {
 
 .fixed-bottom-options {
   margin-top: auto;
-  padding: 20px 0;
+  padding: 20px 0 calc(20px + env(safe-area-inset-bottom)); /* 하단 여백을 늘리고 safe area를 고려 */
   border-top: 1px solid var(--border);
   background: var(--bg); /* 스크롤되는 내용이 겹치지 않게 배경색 지정 */
   position: sticky;
