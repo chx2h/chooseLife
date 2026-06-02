@@ -1,0 +1,345 @@
+/* General styles for better mobile experience */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 14px; /* Smaller base font size for mobile */
+}
+
+/* App container for centering and responsiveness */
+.app-container {
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center;
+  min-height: 100vh;
+  padding: 10px; /* Smaller padding on mobile */
+  box-sizing: border-box;
+  background-color: var(--bg); /* Ensure background is set */
+}
+
+/* Main content section */
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Reduced gap for mobile */
+  width: 100%;
+  max-width: 600px; /* Max width for larger screens */
+  margin: 0 auto;
+  padding: 20px; /* Adjusted padding for mobile */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  background-color: var(--bg);
+}
+
+/* Top Navigation for mode switching */
+.top-nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Smaller gap */
+  padding: 10px; /* Smaller padding */
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-wrap: wrap; /* Allow buttons to wrap */
+}
+
+.top-nav button {
+  padding: 8px 15px; /* Smaller buttons */
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.top-nav button.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Headings */
+h1 {
+  font-size: 1.8em; /* Smaller heading for mobile */
+  margin-bottom: 10px;
+  color: var(--text-color, #333);
+  text-align: center;
+}
+
+.question-box {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.question-box h2 {
+  font-size: 1.2em; /* Smaller question font size */
+  color: var(--text-color, #333);
+  white-space: pre-wrap; /* 엔터(줄바꿈)와 공백을 그대로 보여줘요 */
+}
+
+/* Options buttons */
+.options {
+  display: flex;
+  flex-wrap: wrap; /* 화면이 좁으면 자동으로 다음 줄로 넘어가요 */
+  gap: 10px; /* 버튼 사이의 간격을 조금 더 넓혔어요 */
+  width: 100%;
+  justify-content: center;
+}
+
+.counter {
+  font-size: 1em;
+  padding: 10px 15px; /* Increased padding for better touch targets */
+  border-radius: 8px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+  flex: 1 1 140px; /* 버튼이 최소 140px를 유지하며 유연하게 늘어나요 */
+  max-width: 250px; /* 버튼이 너무 옆으로 길어지지 않게 꽉 잡아줘요 */
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent-border);
+    background-color: var(--accent-bg-hover, #e0e0e0);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #ccc;
+    color: #666;
+  }
+}
+
+.counter.selected {
+  border-color: var(--accent);
+  background-color: var(--accent);
+  color: white;
+}
+
+/* Simulator specific styles */
+.simulator-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.simulator-header h1,
+.editor-header h1 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.flow-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+
+.flow-level {
+  padding: 15px; /* Reduced padding */
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  animation: slideIn 0.3s ease-out;
+}
+
+.btn-refresh {
+  padding: 4px 10px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.45em;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-refresh:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Editor specific styles */
+.editor-view {
+  width: 100%;
+  text-align: left;
+}
+
+.editor-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.global-settings {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.global-settings label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.edit-q, .opt-row input {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--text-h);
+  width: 100%; /* Full width inputs */
+}
+
+.editor-node {
+  border: 1px solid var(--border);
+  padding: 15px; /* Reduced padding */
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.edit-q {
+  width: 100%;
+  font-size: 1em; /* Smaller font size */
+  margin-bottom: 15px;
+}
+.edit-q {
+  min-height: 60px; /* textarea의 최소 높이를 정해줘요 */
+  resize: vertical; /* 세로로만 크기 조절 가능하게 해요 */
+}
+
+.editor-node strong:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+.edit-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opt-row {
+  display: flex;
+  flex-direction: row; /* 에디터에서도 입력창들이 나란히 나오게 해요 */
+  flex-wrap: wrap; /* 자리가 부족하면 다음 줄로 넘어가요 */
+  gap: 5px;
+}
+
+.opt-row input {
+  flex: 1 1 100px; /* 입력창들도 화면에 맞춰 유연하게 변해요 */
+}
+
+.opt-key-link {
+  flex: 1 1 100px;
+  padding: 8px;
+  background: var(--social-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--accent);
+  text-decoration: underline; /* 링크처럼 밑줄을 그어줘요 */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.btn-del-opt {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px;
+  align-self: flex-end; /* 모바일에서 오른쪽 끝으로 보내요 */
+}
+
+.btn-del {
+  color: #ff4d4d;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.btn-add-opt {
+  margin-top: 10px;
+  background: var(--accent-bg);
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%; /* Full width button */
+}
+
+/* Animations */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media query for larger screens (e.g., tablets and desktops) */
+@media (min-width: 768px) {
+  body {
+    font-size: 16px; /* Revert to larger base font size */
+  }
+
+  .app-container {
+    padding: 20px;
+  }
+
+  #center {
+    padding: 40px 20px;
+    gap: 25px;
+  }
+  
+  h1 {
+    font-size: 2em; /* Revert to larger heading */
+  }
+  
+  .question-box h2 {
+    font-size: 1.5em;
+  }
+
+  .top-nav {
+    padding: 20px;
+    gap: 20px;
+    flex-wrap: nowrap;
+  }
+
+  .top-nav button {
+    padding: 10px 20px;
+    font-size: 1em;
+  }
+
+  .flow-level {
+    padding: 20px;
+  }
+}
