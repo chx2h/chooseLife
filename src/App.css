@@ -75,7 +75,7 @@ body {
 h1 {
   font-size: 1.8em; /* Smaller heading for mobile */
   margin-bottom: 10px;
-  color: var(--text-color, #333);
+  color: var(--text-h);
   text-align: center;
 }
 
@@ -86,7 +86,7 @@ h1 {
 
 .question-box h2 {
   font-size: 1.2em; /* Smaller question font size */
-  color: var(--text-color, #333);
+  color: var(--text-h);
   white-space: pre-wrap; /* 엔터(줄바꿈)와 공백을 그대로 보여줘요 */
 }
 
