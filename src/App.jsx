@@ -222,6 +222,7 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
  */
 function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initialFlowData }) {
   const [draggedIndex, setDraggedIndex] = useState(null); // 드래그 중인 노드의 인덱스
+  const [showTreeView, setShowTreeView] = useState(false); // 트리 뷰 모달 상태
 
   // 새로운 질문 노드를 생성하고 전체 데이터 객체에 추가합니다.
   const addNode = (key, initialQuestion = "새 질문을 입력하세요") => {
@@ -340,12 +341,39 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
     onUpdate(newData); // 상위 App의 flowData와 localStorage가 자동 업데이트됩니다.
   };
 
+  // 트리 구조를 재귀적으로 렌더링하는 함수입니다.
+  const renderTree = (nodeKey, visited = new Set()) => {
+    const node = data[nodeKey];
+    if (!node) return <li className="tree-item"><span className="tree-node-id">{nodeKey}</span> (연결된 노드 없음)</li>;
+
+    // 무한 루프(순환 참조) 방지
+    if (visited.has(nodeKey)) {
+      return <li className="tree-item"><span className="tree-node-id">{nodeKey}</span> (이미 위에서 언급됨)</li>;
+    }
+    visited.add(nodeKey);
+
+    return (
+      <li key={nodeKey} className="tree-item">
+        <span className="tree-node-id">{nodeKey}</span>
+        <span className="tree-node-q">{node.question}</span>
+        {node.options.length > 0 && (
+          <ul className="tree-list">
+            {node.options.map((opt, i) => renderTree(opt.key, new Set(visited)))}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
   return (
     <div className="editor-view">
       <div className="editor-header">
         <h1>
           질문 에디터
-          <button className="btn-refresh" onClick={onResetAll}>↻</button>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button className="btn-refresh" onClick={() => setShowTreeView(true)} title="전체 트리 보기" style={{fontSize: '0.8rem', padding: '5px 10px'}}>전체 구조 보기</button>
+            <button className="btn-refresh" onClick={onResetAll}>↻</button>
+          </div>
         </h1>
       </div>
         
@@ -417,6 +445,19 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
         <label>노드 부재 시 경고 문구</label>
         <input value={errorMsg} onChange={(e) => onErrorMsgUpdate(e.target.value)} placeholder="경고 문구를 입력하세요" />
       </div>
+
+      {/* 전체 트리 구조 레이어 */}
+      {showTreeView && (
+        <div className="tree-view-overlay" onClick={() => setShowTreeView(false)}>
+          <div className="tree-view-content" onClick={(e) => e.stopPropagation()}>
+            <h2>프로세스 전체 구조</h2>
+            <ul className="tree-list" style={{border: 'none'}}>
+              {renderTree('start')}
+            </ul>
+            <button className="btn-close-tree" onClick={() => setShowTreeView(false)}>닫기</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
