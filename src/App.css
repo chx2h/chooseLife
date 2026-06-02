@@ -433,6 +433,13 @@ h1 {
   color: var(--text-h);
 }
 
+.tree-choice-label {
+  color: var(--text);
+  font-size: 0.85em;
+  margin-right: 5px;
+  font-style: italic;
+}
+
 .btn-close-tree {
   width: 100%;
   margin-top: 20px;

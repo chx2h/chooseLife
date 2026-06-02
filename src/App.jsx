@@ -342,23 +342,32 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
   };
 
   // 트리 구조를 재귀적으로 렌더링하는 함수입니다.
-  const renderTree = (nodeKey, visited = new Set()) => {
+  const renderTree = (nodeKey, choiceText = "", visited = new Set()) => {
     const node = data[nodeKey];
-    if (!node) return <li className="tree-item"><span className="tree-node-id">{nodeKey}</span> (연결된 노드 없음)</li>;
+    const choiceInfo = choiceText ? <span className="tree-choice-label">↳ "{choiceText}" 선택 시 ➔ </span> : null;
+
+    if (!node) return (
+      <li className="tree-item">
+        {choiceInfo}<span className="tree-node-id">{nodeKey}</span> (연결된 노드 없음)
+      </li>
+    );
 
     // 무한 루프(순환 참조) 방지
     if (visited.has(nodeKey)) {
-      return <li className="tree-item"><span className="tree-node-id">{nodeKey}</span> (이미 위에서 언급됨)</li>;
+      return <li className="tree-item">{choiceInfo}<span className="tree-node-id">{nodeKey}</span> (이미 위에서 언급됨)</li>;
     }
     visited.add(nodeKey);
 
     return (
       <li key={nodeKey} className="tree-item">
-        <span className="tree-node-id">{nodeKey}</span>
-        <span className="tree-node-q">{node.question}</span>
+        <div>
+          {choiceInfo}
+          <span className="tree-node-id">{nodeKey}</span>
+          <span className="tree-node-q">{node.question}</span>
+        </div>
         {node.options.length > 0 && (
           <ul className="tree-list">
-            {node.options.map((opt, i) => renderTree(opt.key, new Set(visited)))}
+            {node.options.map((opt, i) => renderTree(opt.key, opt.text, new Set(visited)))}
           </ul>
         )}
       </li>
