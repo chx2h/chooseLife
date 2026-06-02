@@ -6,8 +6,8 @@ const initialFlowData = {
   start: { // 초기 진입점 노드입니다.
     question: "첫 번째 선택입니다. 어디로 가시겠습니까?", // 해당 노드에서 출력할 질문 텍스트입니다.
     options: [ // 다음 노드로 이동하기 위한 선택지 배열입니다.
-      { text: "1번 경로로 가기", key: "step1", alert: "" }, // 클릭 시 이동할 타겟 노드의 키(key) 값을 가집니다.
-      { text: "2번 경로로 가기", key: "step2", alert: "" }
+      { text: "선택지 1", key: "step1", alert: "", isDefault: true }, // 클릭 시 이동할 타겟 노드의 키(key) 값을 가집니다.
+      { text: "선택지 2", key: "step2", alert: "", isDefault: true }
     ]
   },
 };
@@ -198,6 +198,7 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
             errorMsg={errorMsg}
             onErrorMsgUpdate={setErrorMsg}
             onResetAll={clearAllData} // 전체 초기화 함수를 Props로 전달합니다.
+            initialFlowData={initialFlowData} // Editor 컴포넌트에 initialFlowData를 전달합니다.
           />
         )}
       </section>
@@ -219,11 +220,34 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
  * 에디터 뷰를 담당하는 서브 컴포넌트입니다.
  * Props를 통해 부모로부터 데이터와 상태 변경 함수를 주입받습니다.
  */
-function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll }) {
+function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initialFlowData }) {
+  const [draggedIndex, setDraggedIndex] = useState(null); // 드래그 중인 노드의 인덱스
+
   // 새로운 질문 노드를 생성하고 전체 데이터 객체에 추가합니다.
-  const addNode = (key) => {
+  const addNode = (key, initialQuestion = "새 질문을 입력하세요") => {
     if (!key || data[key]) return alert("유효하지 않거나 중복된 키입니다.");
-    onUpdate({ ...data, [key]: { question: "새 질문을 입력하세요", options: [] } });
+
+    // 중복되지 않는 다음 일련번호를 계산하여 기본 선택지 2개를 생성합니다.
+    const allKeys = new Set(Object.keys(data));
+    Object.values(data).forEach(node => {
+      node.options.forEach(opt => allKeys.add(opt.key));
+    });
+
+    let maxNum = 0;
+    allKeys.forEach(k => {
+      const match = k.match(/^step(\d+)$/);
+      if (match) maxNum = Math.max(maxNum, parseInt(match[1]));
+    });
+
+    const defaultOptions = [
+      { text: "선택지 1", key: `step${maxNum + 1}`, alert: "", isDefault: true },
+      { text: "선택지 2", key: `step${maxNum + 2}`, alert: "", isDefault: true }
+    ];
+
+    onUpdate({ 
+      ...data, 
+      [key]: { question: initialQuestion, options: defaultOptions } 
+    });
   };
 
   // 특정 노드를 삭제합니다. 'start' 노드는 서비스 무결성을 위해 삭제를 금지합니다.
@@ -263,14 +287,19 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll }) {
       }
     });
     
-    const newOption = { text: "새 선택지", key: `step${maxNum + 1}`, alert: "" };
+    const newOption = { text: "새 선택지", key: `step${maxNum + 1}`, alert: "", isDefault: true };
     onUpdate({ ...data, [key]: { ...data[key], options: [...data[key].options, newOption] } });
   };
 
   // 특정 노드 내의 옵션 정보를 수정합니다. (텍스트, 이동 키값, 알림 메시지 등)
   const updateOption = (nodeKey, optIndex, field, value) => {
     const newOptions = [...data[nodeKey].options];
-    newOptions[optIndex] = { ...newOptions[optIndex], [field]: value };
+    const updatedOption = { ...newOptions[optIndex], [field]: value };
+    // 텍스트 필드가 변경되면, 더 이상 기본값이 아니라고 표시합니다.
+    if (field === 'text') {
+      updatedOption.isDefault = false;
+    }
+    newOptions[optIndex] = updatedOption;
     onUpdate({ ...data, [nodeKey]: { ...data[nodeKey], options: newOptions } });
   };
 
@@ -284,6 +313,33 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll }) {
     onUpdate({ ...data, [nodeKey]: { ...data[nodeKey], options: newOptions } });
   };
 
+  // 특정 노드(ID)를 목적지로 가지고 있는 부모 노드의 선택지 텍스트를 찾아 반환합니다.
+  // 이를 통해 ID 옆의 텍스트가 질문 내용이 아닌 '이전 선택지'의 내용과 실시간으로 연동됩니다.
+  const getSourceChoiceText = (targetKey) => {
+    for (const nodeKey in data) {
+      const foundOpt = data[nodeKey].options.find(opt => opt.key === targetKey);
+      if (foundOpt) return foundOpt.text;
+    }
+    return ""; // 연결된 부모가 없는 경우(예: start) 빈 문자열을 반환합니다.
+  };
+
+  // 노드의 순서를 변경하는 함수입니다.
+  const moveNode = (fromIndex, toIndex) => {
+    const keys = Object.keys(data);
+    const newKeys = [...keys];
+    const [movedKey] = newKeys.splice(fromIndex, 1);
+    newKeys.splice(toIndex, 0, movedKey);
+
+    // 새로운 순서로 객체를 재구성합니다. 
+    // JS 객체는 삽입 순서를 유지하므로 이 방식으로 순서 저장이 가능합니다.
+    const newData = {};
+    newKeys.forEach(key => {
+      newData[key] = data[key];
+    });
+    
+    onUpdate(newData); // 상위 App의 flowData와 localStorage가 자동 업데이트됩니다.
+  };
+
   return (
     <div className="editor-view">
       <div className="editor-header">
@@ -294,15 +350,27 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll }) {
       </div>
         
       <div className="node-list">
-        {Object.keys(data).map(key => (
-          <div key={key} className="editor-node">
+        {Object.keys(data).map((key, index) => (
+          <div 
+            key={key} 
+            className={`editor-node ${draggedIndex === index ? 'dragging' : ''}`}
+            onDragOver={(e) => e.preventDefault()} // 드롭 허용
+            onDrop={() => {
+              if (draggedIndex !== null && draggedIndex !== index) {
+                moveNode(draggedIndex, index);
+              }
+              setDraggedIndex(null);
+            }}
+          >
             <div className="node-header">
               <strong 
+                draggable
+                onDragStart={() => setDraggedIndex(index)}
+                onDragEnd={() => setDraggedIndex(null)}
                 onClick={() => addNode(key)} 
-                style={{ cursor: 'pointer' }}
-                title="이 ID를 새 노드 ID로 입력"
+                title="드래그하여 순서 변경 / 클릭하여 ID 복사"
               >
-                ID: {key}
+                ID: {key} ({getSourceChoiceText(key)})
               </strong>
               {key !== 'start' && <button onClick={() => deleteNode(key)} className="btn-del">삭제</button>}
             </div>
@@ -312,18 +380,31 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll }) {
                 <div key={i} className="opt-row">
                   <span 
                     className="opt-key-link"
-                    onClick={() => addNode(opt.key)} 
+                    onClick={() => {
+                      // 현재 입력창에 적힌 버튼 텍스트를 새 질문의 제목으로 사용하여 생성합니다.
+                      addNode(opt.key, opt.text);
+                    }}
                     title="클릭하여 새 질문 방 만들기"
                   >{opt.key}</span>
-                  <input placeholder="버튼 텍스트" value={opt.text} onChange={(e) => updateOption(key, i, 'text', e.target.value)} />
+                  <input 
+                    placeholder={opt.isDefault ? opt.text : "버튼 텍스트"} // isDefault가 true면 opt.text를 placeholder로 사용
+                    value={opt.isDefault ? "" : opt.text} // isDefault가 true면 value를 비워 플레이스홀더처럼 보이게 함
+                    onChange={(e) => updateOption(key, i, 'text', e.target.value)} 
+                  />
                   <input 
                     placeholder="선택 시 알림 (옵션)" 
                     value={opt.alert || ''} 
                     onChange={(e) => updateOption(key, i, 'alert', e.target.value)} 
                   />
-                  {!(key === 'start' && (opt.key === 'step1' || opt.key === 'step2')) && (
-                    <button className="btn-del-opt" onClick={() => deleteOption(key, i)} title="선택지 삭제">X</button>
-                  )}
+                  <button 
+                    className="btn-del-opt" 
+                    onClick={() => deleteOption(key, i)} 
+                    title="선택지 삭제"
+                    style={{ 
+                      visibility: (key === 'start' && (opt.key === 'step1' || opt.key === 'step2')) ? 'hidden' : 'visible',
+                      pointerEvents: (key === 'start' && (opt.key === 'step1' || opt.key === 'step2')) ? 'none' : 'auto'
+                    }}
+                  >X</button>
                 </div>
               ))}
               <button className="btn-add-opt" onClick={() => addOption(key)}>+ 선택지 추가</button>

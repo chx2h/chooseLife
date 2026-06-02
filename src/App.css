@@ -38,6 +38,7 @@ body {
   border-radius: 0; /* 모바일에서는 꽉 차 보이게 둥근 모서리 제거 */
   box-shadow: none; /* 모바일에서는 그림자 제거하여 깔끔하게 */
   background-color: var(--bg);
+  position: relative; /* 하단 고정 버튼의 absolute 포지셔닝을 위한 기준점 */
   overflow: hidden; /* 내부 내용이 넘치지 않게 */
 }
 
@@ -166,7 +167,17 @@ h1 {
   width: 100%;
   flex: 1;
   overflow-y: auto;
-  padding-right: 5px; /* 스크롤바 공간 확보 */
+  padding: 0 5px 250px 0; /* 하단 버튼에 가려지지 않도록 넉넉한 하단 여백 추가 */
+  /* 스크롤바 숨기기 (WebKit 기반 브라우저) */
+  &::-webkit-scrollbar {
+    width: 0; /* 스크롤바의 너비를 0으로 설정 */
+    height: 0; /* 가로 스크롤바의 높이를 0으로 설정 */
+  }
+  /* 스크롤바 숨기기 (Firefox) */
+  scrollbar-width: none; /* 스크롤바를 숨김 */
+  /* Internet Explorer 및 Edge (레거시) */
+  -ms-overflow-style: none; /* IE 및 Edge에서 스크롤바를 숨김 */
+
 }
 
 .flow-level {
@@ -178,12 +189,14 @@ h1 {
 }
 
 .fixed-bottom-options {
-  margin-top: auto;
+  /* margin-top: auto; */ /* absolute 포지셔닝 시 필요 없음 */
   padding: 20px 10px calc(80px + env(safe-area-inset-bottom)); /* 커진 버튼에 맞춰 영역 여백을 조정했습니다 */
   border-top: 1px solid var(--border);
   background: var(--bg); /* 스크롤되는 내용이 겹치지 않게 배경색 지정 */
-  position: sticky;
+  position: absolute; /* sticky 대신 absolute로 변경하여 스크롤 영역 간섭 방지 */
   bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 5;
 }
 
@@ -208,12 +221,30 @@ h1 {
 .editor-view {
   width: 100%;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .editor-header {
   width: 100%;
   text-align: center;
   margin-bottom: 10px;
+}
+
+.node-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px; /* 에디터 노드 리스트 하단 여백 */
+  /* 스크롤바 숨기기 (WebKit 기반 브라우저) */
+  &::-webkit-scrollbar {
+    width: 0; /* 스크롤바의 너비를 0으로 설정 */
+    height: 0; /* 가로 스크롤바의 높이를 0으로 설정 */
+  }
+  /* 스크롤바 숨기기 (Firefox) */
+  scrollbar-width: none; /* 스크롤바를 숨김 */
+  /* Internet Explorer 및 Edge (레거시) */
+  -ms-overflow-style: none; /* IE 및 Edge에서 스크롤바를 숨김 */
 }
 
 .global-settings {
@@ -245,6 +276,13 @@ h1 {
   padding: 15px; /* Reduced padding */
   margin-bottom: 20px;
   border-radius: 8px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.editor-node.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--accent);
+  transform: scale(0.98);
 }
 
 .node-header {
@@ -262,6 +300,18 @@ h1 {
 .edit-q {
   min-height: 60px; /* textarea의 최소 높이를 정해줘요 */
   resize: vertical; /* 세로로만 크기 조절 가능하게 해요 */
+}
+
+.node-header strong {
+  cursor: grab; /* 잡을 수 있다는 표시 */
+  padding: 4px 8px;
+  background: var(--accent-bg);
+  border-radius: 4px;
+  user-select: none;
+}
+
+.node-header strong:active {
+  cursor: grabbing;
 }
 
 .editor-node strong:hover {
