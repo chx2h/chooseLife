@@ -343,27 +343,31 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
     onUpdate(newData); // 상위 App의 flowData와 localStorage가 자동 업데이트됩니다.
   };
 
-  // 트리 뷰에서 노드 클릭 시 해당 에디터 노드로 이동하고 포커스를 줍니다.
+  // 트리 뷰나 선택지 링크 클릭 시 해당 에디터 노드로 이동하고 포커스를 줍니다.
   const handleNodeClick = (nodeKey, choiceText = "") => {
-    setShowTreeView(false); // 먼저 트리 뷰를 닫습니다.
+    setShowTreeView(false); // 트리 뷰 모달이 열려있다면 닫습니다.
     
-    // 1. 만약 해당 ID의 노드가 데이터에 없다면 즉시 생성합니다.
+    // 1. 해당 ID의 노드가 데이터에 없다면 즉시 생성합니다.
     if (!data[nodeKey]) {
       addNode(nodeKey, choiceText || "새 질문을 입력하세요");
     }
 
-    // 모달이 닫히는 애니메이션 등을 고려하여 약간의 지연 후 실행합니다.
+    // 2. 새로운 노드가 DOM에 렌더링되고 레이아웃이 확정될 시간을 충분히 줍니다.
     setTimeout(() => {
       const targetElement = document.getElementById(`node-${nodeKey}`);
       if (targetElement) {
-        // 해당 노드 위치로 부드럽게 스크롤합니다.
+        // 해당 노드 위치로 부드럽게(smooth) 화면 중앙(center)으로 이동합니다.
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // 내부의 질문 입력창(textarea)을 찾아 포커스를 줍니다.
+        // 질문 입력창(textarea)을 찾아 포커스를 줍니다.
         const textarea = targetElement.querySelector('textarea');
-        if (textarea) textarea.focus();
+        if (textarea) {
+          // preventScroll: true를 설정하여 포커스 시 브라우저가 갑자기 화면을 튀게 하는 것을 방지하고
+          // 우리가 설정한 부드러운 스크롤 애니메이션이 유지되도록 합니다.
+          textarea.focus({ preventScroll: true });
+        }
       }
-    }, 100);
+    }, 200); // 지연 시간을 늘려 모바일 등 저사양 환경에서도 부드럽게 작동하게 합니다.
   };
 
   // 트리 구조를 재귀적으로 렌더링하는 함수입니다.
