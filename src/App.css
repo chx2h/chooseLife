@@ -167,7 +167,7 @@ h1 {
   width: 100%;
   flex: 1;
   overflow-y: auto;
-  padding: 0 5px 250px 0; /* 하단 버튼에 가려지지 않도록 넉넉한 하단 여백 추가 */
+  padding: 0 5px 40px 0; /* 하단 고정 버튼 제거에 따른 여백 조정 */
   /* 스크롤바 숨기기 (WebKit 기반 브라우저) */
   &::-webkit-scrollbar {
     width: 0; /* 스크롤바의 너비를 0으로 설정 */
@@ -191,18 +191,6 @@ h1 {
 .flow-level.previous-level {
   opacity: 0.4;
   filter: grayscale(0.6);
-}
-
-.fixed-bottom-options {
-  /* margin-top: auto; */ /* absolute 포지셔닝 시 필요 없음 */
-  padding: 20px 10px calc(80px + env(safe-area-inset-bottom)); /* 커진 버튼에 맞춰 영역 여백을 조정했습니다 */
-  border-top: 1px solid var(--border);
-  background: var(--bg); /* 스크롤되는 내용이 겹치지 않게 배경색 지정 */
-  position: absolute; /* sticky 대신 absolute로 변경하여 스크롤 영역 간섭 방지 */
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 5;
 }
 
 .btn-refresh {
@@ -432,6 +420,12 @@ h1 {
   padding: 2px 6px;
   border-radius: 4px;
   margin-right: 8px;
+  transition: background-color 0.2s;
+}
+
+.tree-node-id:hover {
+  background-color: var(--accent);
+  color: white;
 }
 
 .tree-node-q {

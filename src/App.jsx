@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react' // 리액트의 상태 관리를 위한 useState와 부수 효과 처리를 위한 useEffect 훅을 임포트합니다.
+import { useState, useEffect, useRef } from 'react' // 리액트의 상태 관리를 위한 useState와 부수 효과 처리를 위한 useEffect 훅을 임포트합니다.
 import './App.css' // 컴포넌트 스타일링을 위한 CSS 파일을 불러옵니다.
 
 // 앱 초기 구동 시 사용할 기본 질문 트리 데이터 구조(정적 데이터)입니다.
@@ -50,6 +50,19 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
    * 1번 선택 후: ['start', 'step1']
    */
   const [history, setHistory] = useState(['start']);
+
+  const flowStackRef = useRef(null);
+
+  // 시뮬레이터에서 새로운 질문이 추가될 때 해당 질문을 화면 중앙으로 스크롤합니다.
+  useEffect(() => {
+    if (mode === 'simulate' && flowStackRef.current) {
+      const lastChild = flowStackRef.current.lastElementChild;
+      if (lastChild) {
+        // 부드럽게 중앙으로 스크롤하여 새 질문에 집중할 수 있게 합니다.
+        lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [history, mode]);
 
   // 커스텀 모달의 상태를 관리합니다. (열림 여부 및 메시지)
   const [modal, setModal] = useState({ isOpen: false, message: '' });
@@ -144,8 +157,8 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
               </h1>
             </div>
             <div className="simulator-content">
-              <div className="flow-stack">
-                {/* 1. 질문 히스토리 기록 (이미 선택된 질문과 답변들) */}
+              <div className="flow-stack" ref={flowStackRef}>
+                {/* 질문 히스토리 및 현재 선택지 렌더링 */}
                 {history.map((nodeKey, index) => {
                   const currentNode = flowData[nodeKey];
                   if (!currentNode) return null;
@@ -153,41 +166,30 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
                   return (
                     <div key={nodeKey + index} className={`flow-level ${nextSelectedKey ? 'previous-level' : ''}`}>
                       <div className="question-box"><h2>{currentNode.question}</h2></div>
-                      {/* 이미 선택이 완료된 이전 단계의 답변만 표시 */}
-                      {nextSelectedKey && (
-                        <div className="options">
-                          {currentNode.options.filter(opt => opt.key === nextSelectedKey).map(opt => (
+                      <div className="options">
+                        {nextSelectedKey ? (
+                          // 이미 선택이 완료된 이전 단계의 답변만 표시
+                          currentNode.options.filter(opt => opt.key === nextSelectedKey).map(opt => (
                             <button key={opt.key} className="counter selected" disabled>{opt.text}</button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* 2. 현재 활성화된 질문의 선택지 (화면 하단에 고정) */}
-              <div className="fixed-bottom-options">
-                {(() => {
-                  const currentKey = history[history.length - 1];
-                  const currentNode = flowData[currentKey];
-                  if (!currentNode) return null;
-                  return (
-                    <div className="options">
-                      {currentNode.options.length > 0 ? (
-                        currentNode.options.map((option) => (
+                          ))
+                        ) : (
+                          // 현재 활성화된 질문의 선택지 버튼들을 질문 바로 아래에 표시
+                          currentNode.options.length > 0 ? (
+                            currentNode.options.map((option) => (
                           <button
                             key={option.key}
                             className="counter"
-                            onClick={() => handleChoice(option, history.length - 1)}
+                            onClick={() => handleChoice(option, index)}
                           >
                             {option.text}
                           </button>
-                        ))
-                      ) : <button className="counter reset" onClick={reset}>다시 시작하기</button>}
+                            ))
+                          ) : <button className="counter reset" onClick={reset}>다시 시작하기</button>
+                        )}
+                      </div>
                     </div>
                   );
-                })()}
+                })}
               </div>
             </div>
           </>
@@ -341,6 +343,29 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
     onUpdate(newData); // 상위 App의 flowData와 localStorage가 자동 업데이트됩니다.
   };
 
+  // 트리 뷰에서 노드 클릭 시 해당 에디터 노드로 이동하고 포커스를 줍니다.
+  const handleNodeClick = (nodeKey, choiceText = "") => {
+    setShowTreeView(false); // 먼저 트리 뷰를 닫습니다.
+    
+    // 1. 만약 해당 ID의 노드가 데이터에 없다면 즉시 생성합니다.
+    if (!data[nodeKey]) {
+      addNode(nodeKey, choiceText || "새 질문을 입력하세요");
+    }
+
+    // 모달이 닫히는 애니메이션 등을 고려하여 약간의 지연 후 실행합니다.
+    setTimeout(() => {
+      const targetElement = document.getElementById(`node-${nodeKey}`);
+      if (targetElement) {
+        // 해당 노드 위치로 부드럽게 스크롤합니다.
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // 내부의 질문 입력창(textarea)을 찾아 포커스를 줍니다.
+        const textarea = targetElement.querySelector('textarea');
+        if (textarea) textarea.focus();
+      }
+    }, 100);
+  };
+
   // 트리 구조를 재귀적으로 렌더링하는 함수입니다.
   const renderTree = (nodeKey, choiceText = "", alertText = "", visited = new Set()) => {
     const node = data[nodeKey];
@@ -350,7 +375,12 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
     if (!node) return (
       <li className="tree-item">
         {choiceInfo}
-        <span className="tree-node-id">{nodeKey}</span>
+        <span 
+          className="tree-node-id" 
+          onClick={() => handleNodeClick(nodeKey, choiceText)}
+          style={{ cursor: 'pointer' }}
+          title="클릭하여 새 노드 생성 및 이동"
+        >{nodeKey}</span>
         {alertInfo}
         (연결된 노드 없음)
       </li>
@@ -367,7 +397,12 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
         <div>
           {choiceInfo}
           {alertInfo}
-          <span className="tree-node-id">{nodeKey}</span>
+          <span 
+            className="tree-node-id" 
+            onClick={() => handleNodeClick(nodeKey, choiceText)}
+            style={{ cursor: 'pointer' }}
+            title="클릭하여 편집 위치로 이동"
+          >{nodeKey}</span>
           <span className="tree-node-q">{node.question}</span>
         </div>
         {node.options.length > 0 && (
@@ -395,6 +430,7 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
         {Object.keys(data).map((key, index) => (
           <div 
             key={key} 
+            id={`node-${key}`} // 스크롤 이동을 위한 고유 ID 부여
             className={`editor-node ${draggedIndex === index ? 'dragging' : ''}`}
             onDragOver={(e) => e.preventDefault()} // 드롭 허용
             onDrop={() => {
@@ -424,7 +460,7 @@ function Editor({ data, onUpdate, errorMsg, onErrorMsgUpdate, onResetAll, initia
                     className="opt-key-link"
                     onClick={() => {
                       // 현재 입력창에 적힌 버튼 텍스트를 새 질문의 제목으로 사용하여 생성합니다.
-                      addNode(opt.key, opt.text);
+                      handleNodeClick(opt.key, opt.text);
                     }}
                     title="클릭하여 새 질문 방 만들기"
                   >{opt.key}</span>
