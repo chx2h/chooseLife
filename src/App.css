@@ -257,18 +257,25 @@ h1 {
 
 .edit-q, .opt-row input {
   padding: 8px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border); /* 테두리를 더 두껍게 하여 가시성을 높였습니다. */
   border-radius: 4px;
   background: var(--code-bg);
   color: var(--text-h);
   width: 100%; /* Full width inputs */
+  transition: border-color 0.2s; /* 부드러운 상태 변화를 위한 트랜지션 */
+}
+
+.edit-q:focus, .opt-row input:focus {
+  outline: none;
+  border-color: var(--accent); /* 입력 시 강조 색상을 적용하여 구분을 돕습니다. */
 }
 
 .editor-node {
-  border: 1px solid var(--border);
+  border: 2px solid var(--border); /* 테두리를 더 두껍게 하여 구분을 명확히 했습니다. */
   padding: 15px; /* Reduced padding */
-  margin-bottom: 20px;
+  margin-bottom: 25px; /* 항목 간 간격을 늘려 시각적 분리를 강화했습니다. */
   border-radius: 8px;
+  background-color: var(--code-bg); /* 각 질문 항목에 배경색을 추가하여 더 잘 보이게 했습니다. */
   transition: transform 0.2s, opacity 0.2s;
 }
 

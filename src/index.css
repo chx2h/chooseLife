@@ -1,23 +1,30 @@
+/**
+ * index.css - 전역 테마 및 변수 정의
+ * CSS Variable을 사용하여 라이트/다크 모드를 구현합니다.
+ */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
+  /* 라이트 모드 컬러 세트 */
+  --text: #6b6375;     /* 기본 텍스트 색상 */
+  --text-h: #08060d;   /* 강조 텍스트(제목) 색상 */
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
-  --accent: #aa3bff;
+  --accent: #aa3bff;   /* 포인트 컬러 (보라색) */
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  /* 폰트 설정 */
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light dark; /* 시스템 테마 감지 활성화 */
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -30,6 +37,7 @@
   }
 }
 
+/* 시스템 설정이 다크 모드일 때 변수값 변경 */
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;

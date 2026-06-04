@@ -49,35 +49,45 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
    * 처음 시작 시: ['start']
    * 1번 선택 후: ['start', 'step1']
    */
+  // history: 사용자가 시뮬레이터에서 밟아온 노드 ID의 배열입니다.
+  // 예: ['start', 'step1', 'step4']
   const [history, setHistory] = useState(['start']);
 
+  // flowStackRef: 시뮬레이터의 질문 리스트 영역에 접근하기 위한 참조입니다. (스크롤 제어용)
   const flowStackRef = useRef(null);
 
-  // 시뮬레이터에서 새로운 질문이 추가될 때 해당 질문을 화면 중앙으로 스크롤합니다.
+  /**
+   * [Side Effect] 시뮬레이터에서 새로운 질문이 추가될 때 자동 스크롤
+   * history 배열이 길어질 때마다 마지막으로 추가된 요소를 화면 중앙으로 부드럽게 이동시킵니다.
+   */
   useEffect(() => {
     if (mode === 'simulate' && flowStackRef.current) {
       const lastChild = flowStackRef.current.lastElementChild;
       if (lastChild) {
-        // 부드럽게 중앙으로 스크롤하여 새 질문에 집중할 수 있게 합니다.
         lastChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
   }, [history, mode]);
 
-  // 커스텀 모달의 상태를 관리합니다. (열림 여부 및 메시지)
+  // modal: 알림창의 노출 여부와 내부 메시지를 관리하는 상태입니다.
   const [modal, setModal] = useState({ isOpen: false, message: '' });
 
-  // useEffect를 활용하여 flowData 상태가 변경될 때마다 LocalStorage를 동기화합니다.
+  /**
+   * [Side Effect] 데이터 변경 시 LocalStorage에 실시간 저장
+   * 질문 트리(flowData)가 수정될 때마다 브라우저 저장소에 동기화합니다.
+   */
   useEffect(() => {
     localStorage.setItem('myQuestData', JSON.stringify(flowData));
-  }, [flowData]); // 의존성 배열에 flowData를 추가하여 변경 시에만 실행되도록 합니다.
+  }, [flowData]);
 
-  // 에러 메시지 변경 시에도 LocalStorage에 동기화합니다.
+  /**
+   * [Side Effect] 에러 메시지 변경 시 LocalStorage에 실시간 저장
+   */
   useEffect(() => {
     localStorage.setItem('myErrorMsg', errorMsg);
   }, [errorMsg]);
 
-  // Editor 컴포넌트로부터 전달받은 새 데이터를 flowData 상태에 반영하는 핸들러입니다.
+  // updateFlowData: 자식 컴포넌트(Editor)에서 수정한 데이터를 부모 상태에 반영하는 함수입니다.
   const updateFlowData = (newData) => {
     setFlowData(newData);
   };
@@ -143,8 +153,8 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
     <div className="app-container">
       <nav className="top-nav"> {/* 뷰 모드 전환을 위한 네비게이션입니다. */}
         {/* 상태 변경을 통해 조건부 렌더링을 제어합니다. */}
-        <button onClick={() => setMode('simulate')} className={mode === 'simulate' ? 'active' : ''}>시뮬레이터</button>
-        <button onClick={() => setMode('edit')} className={mode === 'edit' ? 'active' : ''}>질문 에디터</button>
+        <button onClick={() => setMode('simulate')} className={mode === 'simulate' ? 'active' : ''}>메인</button>
+        <button onClick={() => setMode('edit')} className={mode === 'edit' ? 'active' : ''}>에디터</button>
       </nav>
 
       <section id="center">
@@ -194,7 +204,7 @@ function App() { // 최상위 App 컴포넌트 정의입니다.
             </div>
           </>
         ) : ( // 에디터 모드 렌더링
-          <Editor
+          <Editor    // Editer 함수 호출
             data={flowData}
             onUpdate={updateFlowData} // 상위 컴포넌트의 상태를 변경하기 위해 핸들러를 Props로 전달합니다.
             errorMsg={errorMsg}
